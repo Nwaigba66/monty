@@ -1,13 +1,19 @@
-#include "monty.h"
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 
-#define STACK_SIZE 100
+typedef struct Node {
+    int data;
+    struct Node* prev;
+    struct Node* next;
+} Node;
 
-/**
-* main - Entry point of the program.
-* @value: The integer value to be pushed.
-* pall - prints all the values on the stack.
-* Return: EXIT _SUCCESS on success, EXIT_FAILURE on failure.
-*/
+typedef struct Stack {
+    Node* top;
+} Stack;
+
+Stack* stack;
+char** op_toks;
 
 void push(int value);
 void pall(void);
@@ -15,37 +21,33 @@ void pall(void);
 * push - Pushes an element to the stack.
 * @value: The integer value to be pushed.
 */
-void push(int value)
-	{
-	Node newNode = malloc(sizeof(*Node));
+void push(int value) {
+    Node* newNode = malloc(sizeof(Node));
 
-	if (newNode == NULL)
-	{
-	fprintf(stderr, "Error: malloc failed\n");
-	exit(EXIT_FAILURE);
-	}
+    if (newNode == NULL) {
+        fprintf(stderr, "Error: malloc failed\n");
+        exit(EXIT_FAILURE);
+    }
 
-	newNode->data = value;
-	newNode->prev = NULL;
-	newNode->next = stack->top;
+    newNode->data = value;
+    newNode->prev = NULL;
+    newNode->next = stack->top;
 
-	if (stack->top != NULL)
-	stack->top->prev = newNode;
+    if (stack->top != NULL)
+        stack->top->prev = newNode;
 
-	stack->top = newNode;
+    stack->top = newNode;
 }
 /**
  * pall - Prints all the values on the stack.
  */
-void pall(void)
-	{
-	Node current = *stack->top;
+void pall(void) {
+    Node* current = stack->top;
 
-	while (current != NULL)
-	{
-	printf("%d\n", current->data);
-	current = current->next;
-	}
+    while (current != NULL) {
+        printf("%d\n", current->data);
+        current = current->next;
+    }
 }
 /**
 * main - Entry point of the program.
@@ -53,60 +55,56 @@ void pall(void)
 * @argc: Number of arguments.
 * @argv: Array of strings.
 */
-int main(int argc, char *argv[])
-	{
-	FILE *file;
-	char line[100];
-	int line_number = 0;
+int main(int argc, char* argv[]) {
+    FILE* file;
+    char line[100];
+    int line_number = 0;
 
-	if (argc != 2)
-	{
-	fprintf(stderr, "USAGE: monty file\n");
-	exit(EXIT_FAILURE);
-	}
-	file = fopen(argv[1], "r");
+    if (argc != 2) {
+        fprintf(stderr, "USAGE: monty file\n");
+        exit(EXIT_FAILURE);
+    }
 
-	if (file == NULL)
-	{
-	fprintf(stderr, "Error: Can't open file %s\n", argv[1]);
-	exit(EXIT_FAILURE);
-	}
-	stack = malloc(sizeof(Stack));
+    file = fopen(argv[1], "r");
 
-	if (stack == NULL)
-	{
-	fprintf(stderr, "Error: malloc failed\n");
-	exit(EXIT_FAILURE);
-	}
-	stack->top = NULL;
+    if (file == NULL) {
+        fprintf(stderr, "Error: Can't open file %s\n", argv[1]);
+        exit(EXIT_FAILURE);
+    }
 
-	while (fgets(line, sizeof(line), file))
-	{
-	line_number++;
-	line[strcspn(line, "\n")] = '\0';  /* Remove trailing newline character */
+    stack = malloc(sizeof(Stack));
 
-	if (strncmp(line, "push ", 5) == 0)
-	{
-	int value = atoi(line + 5);
+    if (stack == NULL) {
+        fprintf(stderr, "Error: malloc failed\n");
+        exit(EXIT_FAILURE);
+    }
 
-	if (value == 0 && line[5] != '0')
-	{
-		fprintf(stderr, "L%d: usage: push integer\n", line_number);
-		exit(EXIT_FAILURE);
-	}
-	push(value);
-	}
-	else if (strcmp(line, "pall") == 0)
-	{
-		pall();
-	} else
-		{
-		fprintf(stderr, "L%d: unknown instruction %s\n", line_number, line);
-		exit(EXIT_FAILURE);
-		}
-	}
-	fclose(file);
-	free(stack);
-	return (0);
+    stack->top = NULL;
+
+    while (fgets(line, sizeof(line), file)) {
+        line_number++;
+        line[strcspn(line, "\n")] = '\0';  /* Remove trailing newline character */
+
+        if (strncmp(line, "push ", 5) == 0) {
+            int value = atoi(line + 5);
+
+            if (value == 0 && line[5] != '0') {
+                fprintf(stderr, "L%d: usage: push integer\n", line_number);
+                exit(EXIT_FAILURE);
+            }
+
+            push(value);
+        } else if (strcmp(line, "pall") == 0) {
+            pall();
+        } else {
+            fprintf(stderr, "L%d: unknown instruction %s\n", line_number, line);
+            exit(EXIT_FAILURE);
+        }
+    }
+
+    fclose(file);
+    free(stack);
+
+    return (0);
 }
 
